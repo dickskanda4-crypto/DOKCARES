@@ -1,0 +1,1753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediTrack - Patient Appointment & Vital Control Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Playfair+Display:wght@700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #0f766e;
+            --primary-light: #14b8a6;
+            --primary-dark: #0d5b52;
+            --secondary: #8b5cf6;
+            --accent-hiv: #ef4444;
+            --accent-tb: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 12px 28px rgba(0,0,0,0.12);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* ===== LOGIN SCREEN ===== */
+        .login-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .login-container.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .login-box {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 48px 40px;
+            box-shadow: var(--shadow-lg);
+            width: 100%;
+            max-width: 420px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .login-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        .worker-type {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            flex: 1;
+        }
+
+        .radio-option input[type="radio"] {
+            display: none;
+        }
+
+        .radio-label {
+            display: block;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 14px;
+            transition: var(--transition);
+        }
+
+        .radio-option input[type="radio"]:checked + .radio-label {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .login-button {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 8px;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        /* ===== MAIN DASHBOARD ===== */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .worker-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            backdrop-filter: blur(4px);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 13px;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+
+        .stat-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .status-indicator.urgent {
+            background: var(--danger);
+        }
+
+        .status-indicator.warning {
+            background: var(--warning);
+        }
+
+        .status-indicator.normal {
+            background: var(--success);
+        }
+
+        /* ===== TABS & NAVIGATION ===== */
+        .tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 32px;
+            border-bottom: 2px solid var(--border-color);
+            background: var(--bg-secondary);
+            border-radius: 12px 12px 0 0;
+            padding: 0;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+            border-bottom: 3px solid transparent;
+            transition: var(--transition);
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeInTab 0.3s ease-out;
+        }
+
+        @keyframes fadeInTab {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== FORMS ===== */
+        .form-section {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        .form-input,
+        .form-select {
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            transition: var(--transition);
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
+        /* ===== PATIENT CARDS ===== */
+        .patients-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 20px;
+        }
+
+        .patient-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .patient-card.hiv {
+            border-left-color: var(--accent-hiv);
+        }
+
+        .patient-card.tb {
+            border-left-color: var(--accent-tb);
+        }
+
+        .patient-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-6px);
+        }
+
+        .patient-header {
+            background: linear-gradient(135deg, rgba(15, 118, 110, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .patient-type-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .patient-type-badge.hiv {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--accent-hiv);
+        }
+
+        .patient-type-badge.tb {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent-tb);
+        }
+
+        .patient-code {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .patient-body {
+            padding: 16px;
+        }
+
+        .patient-name {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+
+        .patient-contact {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .appointment-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .appointment-item {
+            background: var(--bg-primary);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .appointment-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .appointment-date {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .appointment-date.urgent {
+            color: var(--danger);
+        }
+
+        .appointment-date.warning {
+            color: var(--warning);
+        }
+
+        .status-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .tag.upcoming {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .tag.overdue {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .tag.alert {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .patient-actions {
+            display: flex;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .patient-actions .btn {
+            flex: 1;
+            margin: 0;
+        }
+
+        /* ===== TABLE ===== */
+        .table-wrapper {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: linear-gradient(135deg, rgba(15, 118, 110, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-primary);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* ===== MODALS ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+            color: white;
+            padding: 20px;
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        /* ===== ALERTS & NOTIFICATIONS ===== */
+        .alert {
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            font-size: 13px;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .alert-icon {
+            flex-shrink: 0;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: #047857;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #991b1b;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #92400e;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .alert-info {
+            background: rgba(15, 118, 110, 0.1);
+            color: #134e4a;
+            border: 1px solid rgba(15, 118, 110, 0.3);
+        }
+
+        /* ===== EMPTY STATE ===== */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-secondary);
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state-title {
+            font-weight: 700;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 16px;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .patients-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-btn {
+                flex: auto;
+            }
+
+            .appointment-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div class="login-container active" id="loginContainer">
+    <div class="login-box">
+        <div class="login-header">
+            <div class="login-logo">MediTrack</div>
+            <div class="login-subtitle">Patient Care Management System</div>
+        </div>
+        
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Worker Name</label>
+                <input type="text" class="form-input" id="workerName" placeholder="Enter your full name" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Worker ID</label>
+                <input type="text" class="form-input" id="workerId" placeholder="Enter your ID number" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" id="password" placeholder="Enter password" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Worker Type</label>
+                <div class="worker-type">
+                    <div class="radio-option">
+                        <input type="radio" id="healthWorker" name="workerType" value="health" required>
+                        <label for="healthWorker" class="radio-label">Health Worker</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="communityWorker" name="workerType" value="community" required>
+                        <label for="communityWorker" class="radio-label">Community Worker</label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="login-button">Sign In</button>
+        </form>
+    </div>
+</div>
+
+<!-- ===== MAIN DASHBOARD ===== -->
+<div class="dashboard" id="dashboard">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="header-left">
+            <div>
+                <div class="logo">MediTrack</div>
+                <div class="logo-subtitle">Patient Care Management</div>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="worker-badge">
+                <span id="workerDisplay">Logged in</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">Logout</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="container">
+        <!-- ALERTS -->
+        <div id="alertContainer"></div>
+
+        <!-- STATISTICS -->
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Patients</div>
+                <div class="stat-value" id="totalPatients">0</div>
+                <div class="stat-meta">
+                    <span><span class="status-indicator accent-hiv"></span> HIV: <span id="hivCount">0</span></span>
+                    <span><span class="status-indicator accent-tb"></span> TB: <span id="tbCount">0</span></span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Urgent Actions Required</div>
+                <div class="stat-value" id="urgentCount">0</div>
+                <div class="stat-meta">
+                    <span><span class="status-indicator urgent"></span> Overdue Appointments</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">Upcoming This Month</div>
+                <div class="stat-value" id="upcomingCount">0</div>
+                <div class="stat-meta">
+                    <span><span class="status-indicator warning"></span> Drug Pickups & Controls</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-label">SMS Notifications</div>
+                <div class="stat-value" id="smsCount">0</div>
+                <div class="stat-meta">
+                    <span><span class="status-indicator normal"></span> Sent this month</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="patients">All Patients</button>
+            <button class="tab-btn" data-tab="hiv">HIV Patients</button>
+            <button class="tab-btn" data-tab="tb">TB Patients</button>
+            <button class="tab-btn" data-tab="addPatient">Add New Patient</button>
+            <button class="tab-btn" data-tab="appointments">Appointment History</button>
+        </div>
+
+        <!-- TAB: ALL PATIENTS -->
+        <div class="tab-content active" id="tab-patients">
+            <div class="patients-grid" id="allPatientsGrid">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📭</div>
+                    <div class="empty-state-title">No Patients Yet</div>
+                    <p>Add your first patient to get started</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: HIV PATIENTS -->
+        <div class="tab-content" id="tab-hiv">
+            <div class="patients-grid" id="hivPatientsGrid">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <div class="empty-state-title">No HIV Patients</div>
+                    <p>HIV patient records will appear here</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: TB PATIENTS -->
+        <div class="tab-content" id="tab-tb">
+            <div class="patients-grid" id="tbPatientsGrid">
+                <div class="empty-state">
+                    <div class="empty-state-icon">🔍</div>
+                    <div class="empty-state-title">No TB Patients</div>
+                    <p>TB patient records will appear here</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ADD PATIENT -->
+        <div class="tab-content" id="tab-addPatient">
+            <div class="form-section">
+                <div class="form-section-title">Register New Patient</div>
+                <form id="addPatientForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Patient Code *</label>
+                            <input type="text" class="form-input" id="patientCode" placeholder="e.g., PT-001" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" class="form-input" id="patientName" placeholder="Full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Patient Type *</label>
+                            <select class="form-select" id="patientType" required>
+                                <option value="">Select patient type</option>
+                                <option value="hiv">HIV Patient</option>
+                                <option value="tb">TB Patient</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date of Birth *</label>
+                            <input type="date" class="form-input" id="dateOfBirth" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" class="form-input" id="phoneNumber" placeholder="+1234567890" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Alternative Phone</label>
+                            <input type="tel" class="form-input" id="altPhoneNumber" placeholder="Optional">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="email" placeholder="Email address">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-input" id="address" placeholder="Street address">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Drug Pickup *</label>
+                            <input type="date" class="form-input" id="lastDrugPickup" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Viral Load Test (HIV)</label>
+                            <input type="date" class="form-input" id="lastViralLoad">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Emergency Contact</label>
+                            <input type="text" class="form-input" id="emergencyContact" placeholder="Name and relationship">
+                        </div>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn btn-primary">Register Patient</button>
+                        <button type="reset" class="btn btn-secondary">Clear Form</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- TAB: APPOINTMENT HISTORY -->
+        <div class="tab-content" id="tab-appointments">
+            <div class="table-wrapper">
+                <table id="appointmentTable">
+                    <thead>
+                        <tr>
+                            <th>Patient Code</th>
+                            <th>Patient Name</th>
+                            <th>Type</th>
+                            <th>Appointment Type</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 40px;">No appointment history yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- EDIT PATIENT MODAL -->
+<div class="modal" id="editPatientModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>Edit Patient</span>
+            <button class="modal-close" onclick="closeModal('editPatientModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="editPatientForm">
+                <input type="hidden" id="editPatientId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="editPatientName" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-input" id="editPhoneNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Alternative Phone</label>
+                        <input type="tel" class="form-input" id="editAltPhoneNumber">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-input" id="editEmail">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Drug Pickup</label>
+                        <input type="date" class="form-input" id="editLastDrugPickup" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Viral Load Test</label>
+                        <input type="date" class="form-input" id="editLastViralLoad">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editPatientModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- SEND SMS MODAL -->
+<div class="modal" id="sendSmsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>Send SMS Notification</span>
+            <button class="modal-close" onclick="closeModal('sendSmsModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="sendSmsForm">
+                <input type="hidden" id="smsPatientId">
+                <div class="form-group">
+                    <label class="form-label">Phone Number</label>
+                    <input type="tel" class="form-input" id="smsPhoneNumber" readonly>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Message Type</label>
+                    <select class="form-select" id="messageType" required>
+                        <option value="">Select message type</option>
+                        <option value="drugPickup">Drug Pickup Reminder</option>
+                        <option value="viralLoad">Viral Load Test Due</option>
+                        <option value="control">Health Control Due</option>
+                        <option value="custom">Custom Message</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-input" id="smsMessage" rows="4" placeholder="SMS message text" required style="resize: vertical;"></textarea>
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-success">Send SMS</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('sendSmsModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- UPDATE APPOINTMENT MODAL -->
+<div class="modal" id="updateAppointmentModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span>Update Next Appointment</span>
+            <button class="modal-close" onclick="closeModal('updateAppointmentModal')">×</button>
+        </div>
+        <div class="modal-body">
+            <form id="updateAppointmentForm">
+                <input type="hidden" id="appointmentPatientId">
+                <div class="form-group">
+                    <label class="form-label">Next Drug Pickup Date</label>
+                    <input type="date" class="form-input" id="nextDrugPickup" required>
+                </div>
+                <div class="form-group" id="viralLoadGroup">
+                    <label class="form-label">Next Viral Load Test (HIV Only)</label>
+                    <input type="date" class="form-input" id="nextViralLoad">
+                </div>
+                <div class="form-group" id="controlGroup">
+                    <label class="form-label">Next Health Control</label>
+                    <input type="date" class="form-input" id="nextControl">
+                </div>
+                <div class="button-group">
+                    <button type="submit" class="btn btn-primary">Update Appointment</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('updateAppointmentModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== APPLICATION STATE =====
+    const app = {
+        currentWorker: null,
+        patients: [],
+        appointments: [],
+        smsHistory: [],
+
+        // Demo data
+        demoPatients: [
+            {
+                id: 1,
+                code: 'PT-2024-001',
+                name: 'John Mwangi',
+                type: 'hiv',
+                dob: '1985-03-15',
+                phone: '+254701234567',
+                altPhone: '+254702345678',
+                email: 'john@example.com',
+                address: 'Nairobi, Kenya',
+                lastDrugPickup: '2024-03-15',
+                nextDrugPickup: '2024-04-15',
+                lastViralLoad: '2024-01-20',
+                nextViralLoad: '2024-04-20',
+                nextControl: '2024-06-15',
+                emergencyContact: 'Mary Mwangi - Sister',
+                createdAt: new Date('2024-01-10')
+            },
+            {
+                id: 2,
+                code: 'PT-2024-002',
+                name: 'Alice Kipchoge',
+                type: 'tb',
+                dob: '1990-07-22',
+                phone: '+254703456789',
+                altPhone: '',
+                email: 'alice@example.com',
+                address: 'Kisumu, Kenya',
+                lastDrugPickup: '2024-03-10',
+                nextDrugPickup: '2024-04-10',
+                lastViralLoad: '',
+                nextViralLoad: '',
+                nextControl: '2024-09-10',
+                emergencyContact: 'David Kipchoge - Brother',
+                createdAt: new Date('2024-01-15')
+            },
+            {
+                id: 3,
+                code: 'PT-2024-003',
+                name: 'Samuel Omondi',
+                type: 'hiv',
+                dob: '1988-11-30',
+                phone: '+254704567890',
+                altPhone: '',
+                email: 'samuel@example.com',
+                address: 'Mombasa, Kenya',
+                lastDrugPickup: '2024-02-20',
+                nextDrugPickup: '2024-03-20',
+                lastViralLoad: '2023-12-15',
+                nextViralLoad: '2024-03-15',
+                nextControl: '2024-05-20',
+                emergencyContact: 'Grace Omondi - Mother',
+                createdAt: new Date('2024-02-01')
+            }
+        ]
+    };
+
+    // ===== UTILITIES =====
+    function formatDate(date) {
+        if (!date) return 'N/A';
+        const d = new Date(date);
+        return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function daysUntilDate(dateString) {
+        const targetDate = new Date(dateString);
+        const today = new Date();
+        const diffTime = targetDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    }
+
+    function getAppointmentStatus(dateString) {
+        const days = daysUntilDate(dateString);
+        if (days < 0) return 'overdue';
+        if (days <= 7) return 'urgent';
+        if (days <= 14) return 'warning';
+        return 'upcoming';
+    }
+
+    function showAlert(message, type = 'success') {
+        const alertContainer = document.getElementById('alertContainer');
+        const icons = { success: '✓', error: '✕', warning: '⚠', info: 'ℹ' };
+        
+        const alertEl = document.createElement('div');
+        alertEl.className = `alert alert-${type}`;
+        alertEl.innerHTML = `
+            <div class="alert-icon">${icons[type]}</div>
+            <div>${message}</div>
+        `;
+        
+        alertContainer.appendChild(alertEl);
+        setTimeout(() => alertEl.remove(), 4000);
+    }
+
+    // ===== MODAL FUNCTIONS =====
+    function openModal(modalId) {
+        document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+        document.getElementById(modalId).classList.remove('active');
+    }
+
+    // ===== LOGIN =====
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const workerName = document.getElementById('workerName').value;
+        const workerId = document.getElementById('workerId').value;
+        const workerType = document.querySelector('input[name="workerType"]:checked').value;
+        
+        app.currentWorker = { name: workerName, id: workerId, type: workerType };
+        
+        document.getElementById('loginContainer').classList.remove('active');
+        document.getElementById('dashboard').classList.add('active');
+        document.getElementById('workerDisplay').textContent = `${workerName} (${workerType === 'health' ? 'Health' : 'Community'} Worker)`;
+        
+        // Load demo data
+        app.patients = [...app.demoPatients];
+        updateDashboard();
+        renderPatients();
+        
+        showAlert('Welcome! You are now logged in.', 'success');
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        document.getElementById('loginContainer').classList.add('active');
+        document.getElementById('dashboard').classList.remove('active');
+        document.getElementById('loginForm').reset();
+        app.patients = [];
+        app.currentWorker = null;
+    });
+
+    // ===== TAB SWITCHING =====
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            e.target.classList.add('active');
+            const tabId = e.target.dataset.tab;
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        });
+    });
+
+    // ===== ADD PATIENT =====
+    document.getElementById('addPatientForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const newPatient = {
+            id: app.patients.length + 1,
+            code: document.getElementById('patientCode').value,
+            name: document.getElementById('patientName').value,
+            type: document.getElementById('patientType').value,
+            dob: document.getElementById('dateOfBirth').value,
+            phone: document.getElementById('phoneNumber').value,
+            altPhone: document.getElementById('altPhoneNumber').value,
+            email: document.getElementById('email').value,
+            address: document.getElementById('address').value,
+            lastDrugPickup: document.getElementById('lastDrugPickup').value,
+            nextDrugPickup: calculateNextAppointment(document.getElementById('lastDrugPickup').value),
+            lastViralLoad: document.getElementById('lastViralLoad').value,
+            nextViralLoad: document.getElementById('patientType').value === 'hiv' ? 
+                calculateNextAppointment(document.getElementById('lastViralLoad').value, 3) : '',
+            nextControl: calculateNextAppointment(document.getElementById('lastDrugPickup').value, 
+                document.getElementById('patientType').value === 'hiv' ? 3 : 6),
+            emergencyContact: document.getElementById('emergencyContact').value,
+            createdAt: new Date()
+        };
+        
+        app.patients.push(newPatient);
+        
+        // Add appointment record
+        app.appointments.push({
+            patientId: newPatient.id,
+            patientCode: newPatient.code,
+            patientName: newPatient.name,
+            type: newPatient.type,
+            appointmentType: 'Drug Pickup',
+            date: newPatient.nextDrugPickup,
+            status: 'scheduled',
+            createdAt: new Date()
+        });
+        
+        document.getElementById('addPatientForm').reset();
+        updateDashboard();
+        renderPatients();
+        showAlert(`Patient ${newPatient.code} registered successfully!`, 'success');
+    });
+
+    function calculateNextAppointment(lastDate, months = 1) {
+        if (!lastDate) return '';
+        const date = new Date(lastDate);
+        date.setMonth(date.getMonth() + months);
+        return date.toISOString().split('T')[0];
+    }
+
+    // ===== RENDER PATIENTS =====
+    function renderPatients() {
+        const allGrid = document.getElementById('allPatientsGrid');
+        const hivGrid = document.getElementById('hivPatientsGrid');
+        const tbGrid = document.getElementById('tbPatientsGrid');
+        
+        allGrid.innerHTML = '';
+        hivGrid.innerHTML = '';
+        tbGrid.innerHTML = '';
+        
+        app.patients.forEach(patient => {
+            const card = createPatientCard(patient);
+            allGrid.appendChild(card.cloneNode(true));
+            
+            if (patient.type === 'hiv') {
+                hivGrid.appendChild(card);
+            } else {
+                tbGrid.appendChild(card);
+            }
+        });
+        
+        if (app.patients.length === 0) {
+            allGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-title">No Patients</div></div>';
+            hivGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">No HIV Patients</div></div>';
+            tbGrid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-title">No TB Patients</div></div>';
+        }
+    }
+
+    function createPatientCard(patient) {
+        const drugPickupDays = daysUntilDate(patient.nextDrugPickup);
+        const controlDays = daysUntilDate(patient.nextControl);
+        const viralLoadDays = patient.nextViralLoad ? daysUntilDate(patient.nextViralLoad) : null;
+        
+        const drugPickupStatus = getAppointmentStatus(patient.nextDrugPickup);
+        const controlStatus = getAppointmentStatus(patient.nextControl);
+        const viralLoadStatus = patient.nextViralLoad ? getAppointmentStatus(patient.nextViralLoad) : null;
+        
+        const card = document.createElement('div');
+        card.className = `patient-card ${patient.type}`;
+        
+        let statusTags = '';
+        if (drugPickupStatus === 'overdue') statusTags += '<span class="tag overdue">Drug Pickup Overdue</span>';
+        else if (drugPickupStatus === 'urgent') statusTags += '<span class="tag alert">Drug Pickup Due Soon</span>';
+        else if (drugPickupStatus === 'upcoming') statusTags += '<span class="tag upcoming">Drug Pickup Upcoming</span>';
+        
+        if (patient.type === 'hiv' && viralLoadStatus) {
+            if (viralLoadStatus === 'overdue') statusTags += '<span class="tag overdue">Viral Load Overdue</span>';
+            else if (viralLoadStatus === 'urgent') statusTags += '<span class="tag alert">Viral Load Due</span>';
+            else if (viralLoadStatus === 'upcoming') statusTags += '<span class="tag upcoming">Viral Load Upcoming</span>';
+        }
+        
+        if (controlStatus === 'overdue') statusTags += '<span class="tag overdue">Control Overdue</span>';
+        else if (controlStatus === 'urgent') statusTags += '<span class="tag alert">Control Due Soon</span>';
+        
+        card.innerHTML = `
+            <div class="patient-header">
+                <div>
+                    <div class="patient-type-badge ${patient.type}">
+                        ${patient.type.toUpperCase()}
+                    </div>
+                    <div class="patient-code">${patient.code}</div>
+                </div>
+            </div>
+            <div class="patient-body">
+                <div class="patient-name">${patient.name}</div>
+                <div class="patient-contact">
+                    <strong>Phone:</strong> ${patient.phone}
+                    ${patient.altPhone ? '<br><strong>Alt:</strong> ' + patient.altPhone : ''}
+                    ${patient.email ? '<br><strong>Email:</strong> ' + patient.email : ''}
+                </div>
+                
+                <div class="status-tags">${statusTags}</div>
+                
+                <div class="appointment-info">
+                    <div class="appointment-item">
+                        <div class="appointment-label">Next Drug Pickup</div>
+                        <div class="appointment-date ${drugPickupStatus}">${formatDate(patient.nextDrugPickup)}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">${drugPickupDays} days</div>
+                    </div>
+                    ${patient.type === 'hiv' ? `
+                    <div class="appointment-item">
+                        <div class="appointment-label">Next Viral Load</div>
+                        <div class="appointment-date ${viralLoadStatus}">${formatDate(patient.nextViralLoad)}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">${viralLoadDays} days</div>
+                    </div>
+                    ` : `
+                    <div class="appointment-item">
+                        <div class="appointment-label">Next Control</div>
+                        <div class="appointment-date ${controlStatus}">${formatDate(patient.nextControl)}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">${controlDays} days</div>
+                    </div>
+                    `}
+                </div>
+                
+                <div class="patient-actions">
+                    <button class="btn btn-sm btn-primary" onclick="editPatient(${patient.id})">Edit</button>
+                    <button class="btn btn-sm btn-secondary" onclick="updateAppointment(${patient.id})">Update Appt</button>
+                    <button class="btn btn-sm btn-success" onclick="sendSms(${patient.id})">Send SMS</button>
+                </div>
+            </div>
+        `;
+        
+        return card;
+    }
+
+    // ===== EDIT PATIENT =====
+    function editPatient(patientId) {
+        const patient = app.patients.find(p => p.id === patientId);
+        if (!patient) return;
+        
+        document.getElementById('editPatientId').value = patient.id;
+        document.getElementById('editPatientName').value = patient.name;
+        document.getElementById('editPhoneNumber').value = patient.phone;
+        document.getElementById('editAltPhoneNumber').value = patient.altPhone;
+        document.getElementById('editEmail').value = patient.email;
+        document.getElementById('editLastDrugPickup').value = patient.lastDrugPickup;
+        document.getElementById('editLastViralLoad').value = patient.lastViralLoad;
+        
+        openModal('editPatientModal');
+    }
+
+    document.getElementById('editPatientForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const patientId = parseInt(document.getElementById('editPatientId').value);
+        const patient = app.patients.find(p => p.id === patientId);
+        
+        patient.name = document.getElementById('editPatientName').value;
+        patient.phone = document.getElementById('editPhoneNumber').value;
+        patient.altPhone = document.getElementById('editAltPhoneNumber').value;
+        patient.email = document.getElementById('editEmail').value;
+        patient.lastDrugPickup = document.getElementById('editLastDrugPickup').value;
+        patient.nextDrugPickup = calculateNextAppointment(patient.lastDrugPickup);
+        patient.lastViralLoad = document.getElementById('editLastViralLoad').value;
+        patient.nextViralLoad = patient.type === 'hiv' ? 
+            calculateNextAppointment(patient.lastViralLoad, 3) : '';
+        
+        closeModal('editPatientModal');
+        renderPatients();
+        updateDashboard();
+        showAlert('Patient information updated!', 'success');
+    });
+
+    // ===== UPDATE APPOINTMENT =====
+    function updateAppointment(patientId) {
+        const patient = app.patients.find(p => p.id === patientId);
+        if (!patient) return;
+        
+        document.getElementById('appointmentPatientId').value = patient.id;
+        document.getElementById('nextDrugPickup').value = patient.nextDrugPickup;
+        document.getElementById('nextViralLoad').value = patient.nextViralLoad || '';
+        document.getElementById('nextControl').value = patient.nextControl || '';
+        
+        if (patient.type === 'hiv') {
+            document.getElementById('viralLoadGroup').style.display = 'block';
+            document.getElementById('controlGroup').style.display = 'block';
+        } else {
+            document.getElementById('viralLoadGroup').style.display = 'none';
+            document.getElementById('controlGroup').style.display = 'block';
+        }
+        
+        openModal('updateAppointmentModal');
+    }
+
+    document.getElementById('updateAppointmentForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const patientId = parseInt(document.getElementById('appointmentPatientId').value);
+        const patient = app.patients.find(p => p.id === patientId);
+        
+        patient.nextDrugPickup = document.getElementById('nextDrugPickup').value;
+        patient.nextViralLoad = document.getElementById('nextViralLoad').value || '';
+        patient.nextControl = document.getElementById('nextControl').value || '';
+        
+        // Add appointment record
+        app.appointments.push({
+            patientId: patient.id,
+            patientCode: patient.code,
+            patientName: patient.name,
+            type: patient.type,
+            appointmentType: 'Appointment Update',
+            date: new Date().toISOString().split('T')[0],
+            status: 'updated',
+            createdAt: new Date()
+        });
+        
+        closeModal('updateAppointmentModal');
+        renderPatients();
+        updateDashboard();
+        renderAppointmentHistory();
+        showAlert('Appointment dates updated successfully!', 'success');
+    });
+
+    // ===== SEND SMS =====
+    function sendSms(patientId) {
+        const patient = app.patients.find(p => p.id === patientId);
+        if (!patient) return;
+        
+        document.getElementById('smsPatientId').value = patient.id;
+        document.getElementById('smsPhoneNumber').value = patient.phone;
+        
+        openModal('sendSmsModal');
+    }
+
+    document.getElementById('sendSmsForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const messageType = document.getElementById('messageType').value;
+        const message = document.getElementById('smsMessage').value;
+        const phoneNumber = document.getElementById('smsPhoneNumber').value;
+        const patientId = parseInt(document.getElementById('smsPatientId').value);
+        
+        app.smsHistory.push({
+            patientId: patientId,
+            phoneNumber: phoneNumber,
+            messageType: messageType,
+            message: message,
+            sentAt: new Date()
+        });
+        
+        closeModal('sendSmsModal');
+        document.getElementById('sendSmsForm').reset();
+        updateDashboard();
+        showAlert(`SMS sent to ${phoneNumber}!`, 'success');
+    });
+
+    // ===== APPOINTMENT HISTORY =====
+    function renderAppointmentHistory() {
+        const tbody = document.getElementById('appointmentTableBody');
+        
+        if (app.appointments.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px;">No appointment history</td></tr>';
+            return;
+        }
+        
+        const sorted = app.appointments.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        tbody.innerHTML = sorted.map(apt => {
+            const statusClass = apt.status === 'overdue' ? 'danger' : apt.status === 'urgent' ? 'warning' : 'success';
+            return `
+                <tr>
+                    <td><strong>${apt.patientCode}</strong></td>
+                    <td>${apt.patientName}</td>
+                    <td><span class="patient-type-badge ${apt.type}">${apt.type.toUpperCase()}</span></td>
+                    <td>${apt.appointmentType}</td>
+                    <td>${formatDate(apt.date)}</td>
+                    <td><span class="tag ${apt.status}">${apt.status}</span></td>
+                    <td><button class="btn btn-sm btn-secondary" onclick="alert('Action for appointment ' + ${apt.patientCode})">View</button></td>
+                </tr>
+            `;
+        }).join('');
+    }
+
+    // ===== DASHBOARD UPDATE =====
+    function updateDashboard() {
+        const total = app.patients.length;
+        const hivCount = app.patients.filter(p => p.type === 'hiv').length;
+        const tbCount = app.patients.filter(p => p.type === 'tb').length;
+        
+        let urgentCount = 0;
+        let upcomingCount = 0;
+        
+        app.patients.forEach(p => {
+            if (getAppointmentStatus(p.nextDrugPickup) === 'overdue') urgentCount++;
+            if (p.nextViralLoad && getAppointmentStatus(p.nextViralLoad) === 'overdue') urgentCount++;
+            if (getAppointmentStatus(p.nextControl) === 'overdue') urgentCount++;
+            
+            if (daysUntilDate(p.nextDrugPickup) <= 30 && daysUntilDate(p.nextDrugPickup) >= 0) upcomingCount++;
+        });
+        
+        document.getElementById('totalPatients').textContent = total;
+        document.getElementById('hivCount').textContent = hivCount;
+        document.getElementById('tbCount').textContent = tbCount;
+        document.getElementById('urgentCount').textContent = urgentCount;
+        document.getElementById('upcomingCount').textContent = upcomingCount;
+        document.getElementById('smsCount').textContent = app.smsHistory.length;
+        
+        renderAppointmentHistory();
+    }
+
+    // Initialize on load
+    window.addEventListener('load', () => {
+        showAlert('MediTrack is ready. Please log in to continue.', 'info');
+    });
+</script>
+
+</body>
+</html>
